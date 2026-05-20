@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/projectdiscovery/ratelimit"
@@ -125,6 +126,7 @@ func (n *NoopWriter) Write(data []byte, level levels.Level) {}
 type MockOutputWriter struct {
 	aurora          aurora.Aurora
 	omitTemplate    bool
+	resultCount     atomic.Int32
 	RequestCallback func(templateID, url, requestType string, err error)
 	FailureCallback func(result *output.InternalEvent)
 	WriteCallback   func(o *output.ResultEvent)
@@ -144,11 +146,12 @@ func (m *MockOutputWriter) Colorizer() aurora.Aurora {
 }
 
 func (m *MockOutputWriter) ResultCount() int {
-	return 0
+	return int(m.resultCount.Load())
 }
 
 // Write writes the event to file and/or screen.
 func (m *MockOutputWriter) Write(result *output.ResultEvent) error {
+	m.resultCount.Add(1)
 	if m.WriteCallback != nil {
 		m.WriteCallback(result)
 	}

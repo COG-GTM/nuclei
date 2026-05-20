@@ -22,6 +22,9 @@ var knownLeaks = []goleak.Option{
 }
 
 func TestSimpleNuclei(t *testing.T) {
+	if os.Getenv("NUCLEI_TEST_EXTERNAL") != "1" {
+		t.Skip("skipping test that requires external network access; set NUCLEI_TEST_EXTERNAL=1 to run")
+	}
 	fn := func() {
 		defer func() {
 			// resources like leveldb have a delay to commit in-memory resources
@@ -57,6 +60,9 @@ func TestSimpleNuclei(t *testing.T) {
 }
 
 func TestSimpleNucleiRemote(t *testing.T) {
+	if os.Getenv("NUCLEI_TEST_EXTERNAL") != "1" {
+		t.Skip("skipping test that requires external network access; set NUCLEI_TEST_EXTERNAL=1 to run")
+	}
 	fn := func() {
 		defer func() {
 			// resources like leveldb have a delay to commit in-memory resources

@@ -7,6 +7,7 @@ import (
 )
 
 func TestValidate(t *testing.T) {
+	t.Parallel()
 	m := &Matcher{matcherType: DSLMatcher, DSL: []string{"anything"}}
 
 	err := m.Validate()

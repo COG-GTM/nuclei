@@ -9,6 +9,7 @@ import (
 )
 
 func TestWordANDCondition(t *testing.T) {
+	t.Parallel()
 	m := &Matcher{condition: ANDCondition, Words: []string{"a", "b"}}
 
 	isMatched, matched := m.MatchWords("a b", nil)
@@ -21,6 +22,7 @@ func TestWordANDCondition(t *testing.T) {
 }
 
 func TestRegexANDCondition(t *testing.T) {
+	t.Parallel()
 	m := &Matcher{Type: MatcherTypeHolder{MatcherType: RegexMatcher}, Condition: "and", Regex: []string{"[a-z]{3}", "\\d{2}"}}
 	err := m.CompileMatchers()
 	require.Nil(t, err)
@@ -35,6 +37,7 @@ func TestRegexANDCondition(t *testing.T) {
 }
 
 func TestORCondition(t *testing.T) {
+	t.Parallel()
 	m := &Matcher{condition: ORCondition, Words: []string{"a", "b"}}
 
 	isMatched, matched := m.MatchWords("a b", nil)
@@ -51,6 +54,7 @@ func TestORCondition(t *testing.T) {
 }
 
 func TestRegexOrCondition(t *testing.T) {
+	t.Parallel()
 	m := &Matcher{Type: MatcherTypeHolder{MatcherType: RegexMatcher}, Condition: "or", Regex: []string{"[a-z]{3}", "\\d{2}"}}
 	err := m.CompileMatchers()
 	require.Nil(t, err)
@@ -65,6 +69,7 @@ func TestRegexOrCondition(t *testing.T) {
 }
 
 func TestHexEncoding(t *testing.T) {
+	t.Parallel()
 	m := &Matcher{Encoding: "hex", Type: MatcherTypeHolder{MatcherType: WordsMatcher}, Part: "body", Words: []string{"50494e47"}}
 	err := m.CompileMatchers()
 	require.Nil(t, err, "could not compile matcher")
@@ -75,6 +80,7 @@ func TestHexEncoding(t *testing.T) {
 }
 
 func TestMatcher_MatchDSL(t *testing.T) {
+	t.Parallel()
 	compiled, err := govaluate.NewEvaluableExpressionWithFunctions("contains(body, \"{{VARIABLE}}\")", dsl.HelperFunctions)
 	require.Nil(t, err, "couldn't compile expression")
 
@@ -91,6 +97,7 @@ func TestMatcher_MatchDSL(t *testing.T) {
 }
 
 func TestMatcher_MatchXPath_HTML(t *testing.T) {
+	t.Parallel()
 	body := `<!doctype html>
 <html>
 <head>
@@ -163,6 +170,7 @@ func TestMatcher_MatchXPath_HTML(t *testing.T) {
 }
 
 func TestMatcher_MatchXPath_XML(t *testing.T) {
+	t.Parallel()
 	body := `<?xml version="1.0" encoding="utf-8"?><foo>bar</foo><wibble id="1" /><parent><child>baz</child></parent>`
 	body2 := `<?xml version="1.0" encoding="utf-8"?><test>bar</test><wibble2 id="1" /><roditelj><dijete>alo</dijete></roditelj>`
 
@@ -211,6 +219,7 @@ func TestMatcher_MatchXPath_XML(t *testing.T) {
 }
 
 func TestMatchRegex_CaseInsensitivePrefixSkip(t *testing.T) {
+	t.Parallel()
 	m := &Matcher{Type: MatcherTypeHolder{MatcherType: RegexMatcher}, Condition: "or", Regex: []string{"(?i)abc"}}
 	err := m.CompileMatchers()
 	require.NoError(t, err)
@@ -220,6 +229,7 @@ func TestMatchRegex_CaseInsensitivePrefixSkip(t *testing.T) {
 }
 
 func TestMatchStatusCodeAndSize(t *testing.T) {
+	t.Parallel()
 	mStatus := &Matcher{Status: []int{200, 302}}
 	require.True(t, mStatus.MatchStatusCode(200))
 	require.True(t, mStatus.MatchStatusCode(302))
@@ -231,6 +241,7 @@ func TestMatchStatusCodeAndSize(t *testing.T) {
 }
 
 func TestMatchBinary_AND_OR(t *testing.T) {
+	t.Parallel()
 	// AND should fail if any binary not present
 	mAnd := &Matcher{Type: MatcherTypeHolder{MatcherType: BinaryMatcher}, Condition: "and", Binary: []string{"50494e47", "414141"}} // "PING", "AAA"
 	require.NoError(t, mAnd.CompileMatchers())
@@ -245,6 +256,7 @@ func TestMatchBinary_AND_OR(t *testing.T) {
 }
 
 func TestMatchRegex_LiteralPrefixShortCircuit(t *testing.T) {
+	t.Parallel()
 	// AND: first regex has literal prefix "abc"; corpus lacks it => early false
 	mAnd := &Matcher{Type: MatcherTypeHolder{MatcherType: RegexMatcher}, Condition: "and", Regex: []string{"abc[0-9]*", "[0-9]{2}"}}
 	require.NoError(t, mAnd.CompileMatchers())
@@ -261,6 +273,7 @@ func TestMatchRegex_LiteralPrefixShortCircuit(t *testing.T) {
 }
 
 func TestMatcher_MatchDSL_ErrorHandling(t *testing.T) {
+	t.Parallel()
 	// First expression errors (division by zero), second is true
 	bad, err := govaluate.NewEvaluableExpression("1 / 0")
 	require.NoError(t, err)

@@ -78,18 +78,32 @@ func TestIntegrationSuites(t *testing.T) {
 		return
 	}
 
+	flakyCount := 0
 	if isCI() {
 		for attempt := 1; attempt <= maxFailureReruns && len(failed) > 0; attempt++ {
+			prevCount := len(failed)
 			failed = withGroupedOutput(fmt.Sprintf("Rerun failed integration tests (%d/%d)", attempt, maxFailureReruns), func() []failedIntegrationCase {
 				return runIntegrationPass(t, fmt.Sprintf("rerun-%d", attempt), failedCasesByFamily(failed), debug)
 			})
+			flakyCount += prevCount - len(failed)
 		}
 	}
 
 	if len(failed) > 0 && shouldDebugFailureRerun() {
+		prevCount := len(failed)
 		failed = withGroupedOutput("Rerun failed integration tests in debug mode", func() []failedIntegrationCase {
 			return runIntegrationPass(t, "debug-rerun", failedCasesByFamily(failed), true)
 		})
+		flakyCount += prevCount - len(failed)
+	}
+
+	if flakyCount > 0 {
+		if summaryPath := os.Getenv("GITHUB_STEP_SUMMARY"); summaryPath != "" {
+			if f, err := os.OpenFile(summaryPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err == nil {
+				fmt.Fprintf(f, "\n## Flaky Integration Tests\n\n%d test(s) passed only on retry.\n", flakyCount)
+				f.Close()
+			}
+		}
 	}
 
 	if len(failed) > 0 {
@@ -147,7 +161,12 @@ func runIntegrationFamily(t *testing.T, semaphore chan struct{}, failures *integ
 				semaphore <- struct{}{}
 				defer func() { <-semaphore }()
 			}
-			if err := executeIntegrationCase(testCase); err != nil {
+			err := executeIntegrationCase(testCase)
+			if err == errSkipped {
+				t.Skip("test disabled via DisableOn")
+				return
+			}
+			if err != nil {
 				failures.Add(failedIntegrationCase{Family: family.Name, Case: testCase, Err: err})
 				t.Logf("integration case failed: %v", err)
 			}
@@ -155,9 +174,11 @@ func runIntegrationFamily(t *testing.T, semaphore chan struct{}, failures *integ
 	}
 }
 
+var errSkipped = fmt.Errorf("test skipped")
+
 func executeIntegrationCase(testCase integrationCase) error {
 	if testCase.DisableOn != nil && testCase.DisableOn() {
-		return nil
+		return errSkipped
 	}
 	if needsSignedCodeTemplates(testCase.Path) {
 		if err := ensureSignedCodeTemplates(); err != nil {
@@ -172,6 +193,9 @@ func executeIntegrationCase(testCase integrationCase) error {
 
 		err = testCase.TestCase.Execute(testCase.Path)
 		if err == nil {
+			if retries > 1 {
+				fmt.Fprintf(os.Stderr, "FLAKY: test %s passed on attempt %d\n", testCase.Path, attempt)
+			}
 			return nil
 		}
 	}

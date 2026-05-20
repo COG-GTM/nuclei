@@ -23,8 +23,8 @@ endif
 
 .PHONY: all build build-stats clean devtools-all devtools-bindgen devtools-scrapefuncs fuzz fuzz-ci fuzz-tools
 .PHONY: devtools-tsgen docs docgen dsl-docs functional go-build lint lint-strict fuzzplayground syntax-docs
-.PHONY: integration integration-debug jsupdate-all jsupdate-bindgen jsupdate-tsgen memogen scan-charts test test-with-lint
-.PHONY: tidy ts verify download vet template-validate build-fuzz discover-fuzz-packages
+.PHONY: integration integration-debug jsupdate-all jsupdate-bindgen jsupdate-tsgen memogen scan-charts test test-cover test-with-lint
+.PHONY: headless tidy ts verify download vet template-validate build-fuzz discover-fuzz-packages
 
 all: build
 
@@ -86,8 +86,14 @@ test: GOFLAGS = -race -v -timeout 1h -count 1
 test:
 	$(GOTEST) $(GOFLAGS) ./...
 
+test-cover:
+	$(GOTEST) -race -v -timeout 1h -count 1 -coverprofile=coverage.out ./...
+
 integration:
 	$(GOTEST) -tags=integration -timeout 1h ./internal/tests/integration
+
+headless:
+	$(GOTEST) -tags=headless -timeout 30m ./internal/tests/testheadless/...
 
 integration-debug:
 	$(GOTEST) -tags=integration ./internal/tests/integration -v $(GO_TEST_ARGS) -args $(INTEGRATION_ARGS)

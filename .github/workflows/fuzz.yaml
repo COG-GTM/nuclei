@@ -1,54 +1,39 @@
-name: 🧪 Fuzz
+name: 🔀 Fuzz Testing
 
 on:
   schedule:
-    - cron: '0 3 * * 0' # Weekly
-  workflow_dispatch: {}
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    - cron: '0 3 * * 1'  # Weekly on Monday at 3 AM UTC
+  workflow_dispatch:
 
 jobs:
-  discover-packages:
-    name: Discover fuzz packages
-    if: ${{ github.event_name != 'schedule' || github.repository == 'projectdiscovery/nuclei' }}
+  discover:
+    name: "Discover fuzz packages"
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.discover.outputs.matrix }}
     steps:
       - uses: actions/checkout@v6
       - uses: projectdiscovery/actions/setup/go@v1
-        with:
-          go-version-file: go.tool.mod
-          cache-dependency-path: go.tool.sum
-      - id: discover
+      - name: "Discover fuzzable packages"
+        id: discover
         run: make discover-fuzz-packages
 
   fuzz:
-    name: Fuzz ${{ matrix.pkg }}
-    needs: discover-packages
+    name: "Fuzz ${{ matrix.pkg }}"
+    needs: discover
     runs-on: ubuntu-latest
-    timeout-minutes: 35
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.discover-packages.outputs.matrix) }}
-    env:
-      GOFUZZ_PACKAGE: ${{ matrix.pkg }}
-      FUZZ_DURATION: 15m
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v6
       - uses: projectdiscovery/actions/setup/go@v1
-        with:
-          go-version-file: go.tool.mod
-          cache-dependency-path: go*sum # go.sum + go.tool.sum
-      - id: fuzz
-        run: make fuzz-ci GOFUZZ_PACKAGE="${GOFUZZ_PACKAGE}" FUZZ_DURATION="${FUZZ_DURATION}"
-      - if: ${{ always() }}
-        uses: actions/upload-artifact@v7
+      - name: "Run fuzzer"
+        id: fuzz
+        run: make fuzz-ci GOFUZZ_PACKAGE=${{ matrix.pkg }} FUZZ_DURATION=300
+      - name: "Upload crashers"
+        uses: actions/upload-artifact@v4
+        if: failure()
         with:
           name: ${{ steps.fuzz.outputs.artifact_name }}
-          path: ${{ matrix.pkg }}/.gofuzz
-          if-no-files-found: warn
-          overwrite: true
-          retention-days: 14
+          path: ${{ matrix.pkg }}/.gofuzz/crashers/

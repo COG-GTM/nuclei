@@ -154,12 +154,10 @@ func Test_scanallips_normalizeStoreInputValue(t *testing.T) {
 }
 
 func Test_expandASNInputValue(t *testing.T) {
-	// skip this test if pdcp keys are not present
 	h := pdcp.PDCPCredHandler{}
 	creds, err := h.GetCreds()
 	if err != nil || creds == nil || creds.APIKey == "" {
-		t.Logf("Skipping asnmap test as pdcp keys are not present")
-		t.SkipNow()
+		t.Skip("skipping ASN expansion test: PDCP API credentials not available")
 	}
 	tests := []struct {
 		asn                string

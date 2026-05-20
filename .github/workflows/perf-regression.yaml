@@ -7,7 +7,7 @@ on:
 jobs:
   perf-regression:
     runs-on: ubuntu-latest
-    if: github.repository == 'projectdiscovery/nuclei'
+    if: github.repository == 'projectdiscovery/nuclei' || github.repository == 'COG-GTM/nuclei'
     env:
       BENCH_OUT: "/tmp/bench.out"
     steps:

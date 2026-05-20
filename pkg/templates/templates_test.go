@@ -10,6 +10,7 @@ import (
 )
 
 func TestCachePoolZeroing(t *testing.T) {
+	t.Parallel()
 	c := NewCache()
 
 	tpl := &Template{ID: "x"}
@@ -36,6 +37,7 @@ func TestCachePoolZeroing(t *testing.T) {
 }
 
 func TestTemplateStruct(t *testing.T) {
+	t.Parallel()
 	templatePath := "./tests/match-1.yaml"
 	bin, err := os.ReadFile(templatePath)
 	require.Nil(t, err, "failed to load example template")

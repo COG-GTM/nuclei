@@ -32,8 +32,7 @@ import (
 )
 
 var httpTestcases = []integrationCase{
-	// TODO: excluded due to parsing errors with console
-	// "http/raw-unsafe-request.yaml":                  &httpRawUnsafeRequest{},
+	{Path: "http/raw-unsafe-request.yaml", TestCase: &httpRawUnsafeRequest{}, DisableOn: func() bool { return true }}, // excluded: parsing errors with console - see projectdiscovery/nuclei#6296
 	{Path: "protocols/http/get-headers.yaml", TestCase: &httpGetHeaders{}},
 	{Path: "protocols/http/get-query-string.yaml", TestCase: &httpGetQueryString{}},
 	{Path: "protocols/http/get-redirects.yaml", TestCase: &httpGetRedirects{}},
@@ -945,28 +944,11 @@ func (h *httpRawCookieReuse) Execute(filePath string) error {
 	return expectResultsCount(results, 1)
 }
 
-// TODO: excluded due to parsing errors with console
-// type httpRawUnsafeRequest struct{
-// Execute executes a test case and returns an error if occurred
-// func (h *httpRawUnsafeRequest) Execute(filePath string) error {
-// 	var routerErr error
-//
-// 	ts := testutils.NewTCPServer(nil, defaultStaticPort, func(conn net.Conn) {
-// 		defer conn.Close()
-// 		_, _ = conn.Write([]byte("protocols/http/1.1 200 OK\r\nContent-Length: 36\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nThis is test raw-unsafe-matcher test"))
-// 	})
-// 	defer ts.Close()
-//
-// 	results, err := testutils.RunNucleiTemplateAndGetResults(filePath, "http://"+ts.URL, debug)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if routerErr != nil {
-// 		return routerErr
-// 	}
-//
-// 	return expectResultsCount(results, 1)
-// }
+type httpRawUnsafeRequest struct{}
+
+func (h *httpRawUnsafeRequest) Execute(filePath string) error {
+	return fmt.Errorf("excluded: parsing errors with console - see projectdiscovery/nuclei#6296")
+}
 
 type httpRequestCondition struct{}
 

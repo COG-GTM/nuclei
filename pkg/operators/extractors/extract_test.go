@@ -7,6 +7,7 @@ import (
 )
 
 func TestExtractor_ExtractRegex(t *testing.T) {
+	t.Parallel()
 	e := &Extractor{Type: ExtractorTypeHolder{ExtractorType: RegexExtractor}, Regex: []string{`([A-Z])\w+`}}
 	err := e.CompileExtractors()
 	require.Nil(t, err)
@@ -19,6 +20,7 @@ func TestExtractor_ExtractRegex(t *testing.T) {
 }
 
 func TestExtractor_ExtractKval(t *testing.T) {
+	t.Parallel()
 	e := &Extractor{Type: ExtractorTypeHolder{ExtractorType: KValExtractor}, KVal: []string{"content_type"}}
 	err := e.CompileExtractors()
 	require.Nil(t, err)
@@ -32,6 +34,7 @@ func TestExtractor_ExtractKval(t *testing.T) {
 }
 
 func TestExtractor_ExtractXPath(t *testing.T) {
+	t.Parallel()
 	body := `<!doctype html>
 <html>
 <head>
@@ -66,6 +69,7 @@ func TestExtractor_ExtractXPath(t *testing.T) {
 }
 
 func TestExtractor_ExtractJSON(t *testing.T) {
+	t.Parallel()
 	e := &Extractor{Type: ExtractorTypeHolder{ExtractorType: JSONExtractor}, JSON: []string{".[] | .id"}}
 	err := e.CompileExtractors()
 	require.Nil(t, err)
@@ -78,6 +82,7 @@ func TestExtractor_ExtractJSON(t *testing.T) {
 }
 
 func TestExtractor_ExtractDSL(t *testing.T) {
+	t.Parallel()
 	e := &Extractor{Type: ExtractorTypeHolder{ExtractorType: DSLExtractor}, DSL: []string{"to_upper(hello)"}}
 	err := e.CompileExtractors()
 	require.Nil(t, err)

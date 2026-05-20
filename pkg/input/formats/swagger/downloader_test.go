@@ -266,6 +266,9 @@ func TestSwaggerDownloader_Download_InvalidYAML(t *testing.T) {
 }
 
 func TestSwaggerDownloader_Download_Timeout(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow timeout test in short mode")
+	}
 	// Create mock server with delay
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(35 * time.Second) // Longer than 30 second timeout
