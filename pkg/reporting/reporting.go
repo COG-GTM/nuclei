@@ -25,6 +25,7 @@ import (
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/markdown"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/pdf"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/sarif"
+	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/slack"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/splunk"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/trackers/filters"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/trackers/gitea"
@@ -185,6 +186,13 @@ func New(options *Options, db string, doNotDedupe bool) (Client, error) {
 		}
 		client.exporters = append(client.exporters, exporter)
 	}
+	if options.SlackExporter != nil {
+		exporter, err := slack.New(options.SlackExporter)
+		if err != nil {
+			return nil, errkit.Wrapf(err, "could not create export client: %v", ErrExportClientCreation)
+		}
+		client.exporters = append(client.exporters, exporter)
+	}
 
 	if doNotDedupe {
 		return client, nil
@@ -235,6 +243,7 @@ func CreateConfigIfNotExists() error {
 		JSONLExporter:         &jsonl.Options{},
 		PDFExporter:           &pdf.Options{},
 		MongoDBExporter:       &mongo.Options{},
+		SlackExporter:         &slack.Options{},
 	}
 	reportingFile, err := os.Create(reportingConfig)
 	if err != nil {

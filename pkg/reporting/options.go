@@ -9,6 +9,7 @@ import (
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/mongo"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/pdf"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/sarif"
+	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/slack"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/exporters/splunk"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/trackers/filters"
 	"github.com/projectdiscovery/nuclei/v3/pkg/reporting/trackers/gitea"
@@ -53,6 +54,8 @@ type Options struct {
 	PDFExporter *pdf.Options `yaml:"pdf"`
 	// MongoDBExporter containers the configuration options for the MongoDB Exporter Module
 	MongoDBExporter *mongo.Options `yaml:"mongodb"`
+	// SlackExporter contains configuration options for Slack Exporter Module
+	SlackExporter *slack.Options `yaml:"slack"`
 
 	HttpClient *retryablehttp.Client `yaml:"-"`
 	OmitRaw    bool                  `yaml:"-"`
